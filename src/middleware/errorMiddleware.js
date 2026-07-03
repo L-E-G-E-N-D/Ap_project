@@ -1,44 +1,32 @@
 const AppError = require('../utils/appError');
-const ApiResponse = require('../utils/apiResponse');
+const { error } = require('../utils/apiResponse');
 
-/**
- * Centralized Error Handling Middleware
- */
 const errorMiddleware = (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.message = err.message || 'Internal Server Error';
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
+  let errors = err.errors || null;
 
-  // Log only unexpected 500 errors in development
-  if (process.env.NODE_ENV === 'development' || err.statusCode === 500) {
-    console.error(`[ERROR] ${req.method} ${req.url} - `, err);
-  }
-
-  // Handle Prisma Unique Constraint error (e.g. Email already exists)
   if (err.code === 'P2002') {
-    const fields = err.meta?.target || [];
-    err = new AppError(
-      `Duplicate field value entered: ${fields.join(', ')}. Please use another value.`,
-      409
-    );
+    statusCode = 409;
+    message = 'Email already exists';
   }
 
-  // Handle Prisma Record Not Found error
   if (err.code === 'P2025') {
-    err = new AppError('Record not found', 404);
+    statusCode = 404;
+    message = 'Record not found';
   }
 
-  // Handle JWT errors
   if (err.name === 'JsonWebTokenError') {
-    err = new AppError('Invalid token. Please log in again.', 401);
-  }
-  if (err.name === 'TokenExpiredError') {
-    err = new AppError('Your token has expired. Please log in again.', 401);
+    statusCode = 401;
+    message = 'Invalid token';
   }
 
-  // Final structured API error response
-  return res.status(err.statusCode).json(
-    ApiResponse.error(err.message, err.errors)
-  );
+  if (err.name === 'TokenExpiredError') {
+    statusCode = 401;
+    message = 'Token expired';
+  }
+
+  return res.status(statusCode).json(error(message, errors));
 };
 
 module.exports = errorMiddleware;
