@@ -55,10 +55,40 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
+const restoreTask = async (req, res, next) => {
+  try {
+    const task = await taskService.restoreTask(req.user.id, req.params.id);
+    return res.status(200).json(success('Task restored successfully', task));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const completeTask = async (req, res, next) => {
+  try {
+    const task = await taskService.completeTask(req.user.id, req.params.id);
+    return res.status(200).json(success('Task completed successfully', task));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getStats = async (req, res, next) => {
+  try {
+    const stats = await taskService.getStats(req.user.id);
+    return res.status(200).json(success('Task statistics retrieved successfully', stats));
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
   getTaskById,
   updateTask,
   deleteTask,
+  restoreTask,
+  completeTask,
+  getStats,
 };

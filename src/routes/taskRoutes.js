@@ -10,8 +10,11 @@ router.use(authMiddleware);
 
 router.post('/', validate(createTaskSchema), taskController.createTask);
 router.get('/', taskController.getTasks);
+router.get('/stats', taskController.getStats);
 router.get('/:id', taskController.getTaskById);
 router.put('/:id', validate(updateTaskSchema), taskController.updateTask);
 router.delete('/:id', taskController.deleteTask);
+router.patch('/:id/restore', taskController.restoreTask);
+router.patch('/:id/complete', taskController.completeTask);
 
 module.exports = router;

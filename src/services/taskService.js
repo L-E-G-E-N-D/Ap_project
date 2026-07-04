@@ -85,10 +85,51 @@ const deleteTask = async (userId, id) => {
   });
 };
 
+const restoreTask = async (userId, id) => {
+  const task = await prisma.task.findFirst({
+    where: { id, userId },
+  });
+  if (!task) {
+    throw new AppError('Task not found', 404);
+  }
+  return await prisma.task.update({
+    where: { id },
+    data: { isDeleted: false },
+  });
+};
+
+const completeTask = async (userId, id) => {
+  await getTaskById(userId, id);
+  return await prisma.task.update({
+    where: { id },
+    data: { status: 'COMPLETED' },
+  });
+};
+
+const getStats = async (userId) => {
+  const totalTasks = await prisma.task.count({ where: { userId, isDeleted: false } });
+  const completed = await prisma.task.count({ where: { userId, isDeleted: false, status: 'COMPLETED' } });
+  const pending = await prisma.task.count({ where: { userId, isDeleted: false, status: 'PENDING' } });
+  const highPriority = await prisma.task.count({ where: { userId, isDeleted: false, priority: 'HIGH' } });
+  const overdue = await prisma.task.count({
+    where: {
+      userId,
+      isDeleted: false,
+      status: 'PENDING',
+      dueDate: { lt: new Date() },
+    },
+  });
+
+  return { totalTasks, completed, pending, highPriority, overdue };
+};
+
 module.exports = {
   createTask,
   getTasks,
   getTaskById,
   updateTask,
   deleteTask,
+  restoreTask,
+  completeTask,
+  getStats,
 };
