@@ -16,6 +16,11 @@ const errorMiddleware = (err, req, res, next) => {
     message = 'Record not found';
   }
 
+  if (err.code === 'P2023') {
+    statusCode = 400;
+    message = 'Invalid ID format';
+  }
+
   if (err.name === 'JsonWebTokenError') {
     statusCode = 401;
     message = 'Invalid token';
