@@ -35,26 +35,26 @@ const getTasks = async (userId, filters = {}) => {
   } else {
     orderBy.createdAt = 'desc';
   }
+  const p = parseInt(page);
+  const l = parseInt(limit);
+  const skip = (p - 1) * l;
 
-  const skip = (page - 1) * limit;
+  const tasks = await prisma.task.findMany({
+    where,
+    orderBy,
+    skip,
+    take: l,
+  });
 
-  const [tasks, total] = await prisma.$transaction([
-    prisma.task.findMany({
-      where,
-      orderBy,
-      skip,
-      take: Number(limit),
-    }),
-    prisma.task.count({ where }),
-  ]);
+  const total = await prisma.task.count({ where });
 
   return {
     tasks,
     pagination: {
       total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit),
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
     },
   };
 };
