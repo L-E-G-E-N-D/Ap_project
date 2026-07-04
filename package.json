@@ -11,7 +11,8 @@
     "prisma:studio": "prisma studio"
   },
   "prisma": {
-    "schema": "src/prisma/schema.prisma"
+    "schema": "src/prisma/schema.prisma",
+    "seed": "node src/prisma/seed.js"
   },
   "keywords": [],
   "author": "",
